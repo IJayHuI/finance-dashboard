@@ -1,3 +1,5 @@
 # pnpm workspace 配置
 # 单包项目，没有子包
 packages: []
+allowBuilds:
+  esbuild: set this to true or false

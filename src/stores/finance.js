@@ -263,46 +263,60 @@ export const useFinanceStore = defineStore('finance', () => {
 
   // ========== 数据加载 ==========
 
-  /** 从 Supabase 加载全部数据 */
+  /** 从 Supabase 加载全部数据（内部实现，不含 loading 状态） */
+  async function fetchAllData() {
+    // 并行加载三张表
+    const [{ data: pData, error: pe }, { data: iData, error: ie }, { data: aData, error: ae }] = await Promise.all([
+      supabase.from('projects').select('*').order('sort_order'),
+      supabase.from('investments').select('*').order('date'),
+      supabase.from('assets').select('*').order('date'),
+    ])
+    if (pe || ie || ae) throw new Error(pe?.message || ie?.message || ae?.message)
+
+    // 建立 project_id -> name 的映射
+    const projectMap = {}
+    pData.forEach(p => { projectMap[p.id] = p })
+
+    projects.value = pData.map(p => ({ id: p.id, name: p.name, currency: p.currency }))
+    investments.value = iData.map(r => ({
+      id: r.id,
+      date: r.date,
+      amount: parseFloat(r.amount),
+      project: projectMap[r.project_id]?.name || '?',
+    }))
+    assets.value = aData.map(r => ({
+      id: r.id,
+      date: r.date,
+      amount: parseFloat(r.amount),
+      project: projectMap[r.project_id]?.name || '?',
+    }))
+
+    // 默认选中第一个项目用于历史趋势图
+    if (projects.value.length > 0 && !selectedProjectHistory.value) {
+      selectedProjectHistory.value = projects.value[0].name
+    }
+  }
+
+  /** 从 Supabase 加载全部数据（首次加载，显示 loading） */
   async function loadData() {
     loading.value = true
     loadError.value = ''
     try {
-      // 并行加载三张表
-      const [{ data: pData, error: pe }, { data: iData, error: ie }, { data: aData, error: ae }] = await Promise.all([
-        supabase.from('projects').select('*').order('sort_order'),
-        supabase.from('investments').select('*').order('date'),
-        supabase.from('assets').select('*').order('date'),
-      ])
-      if (pe || ie || ae) throw new Error(pe?.message || ie?.message || ae?.message)
-
-      // 建立 project_id -> name 的映射
-      const projectMap = {}
-      pData.forEach(p => { projectMap[p.id] = p })
-
-      projects.value = pData.map(p => ({ id: p.id, name: p.name, currency: p.currency }))
-      investments.value = iData.map(r => ({
-        id: r.id,
-        date: r.date,
-        amount: parseFloat(r.amount),
-        project: projectMap[r.project_id]?.name || '?',
-      }))
-      assets.value = aData.map(r => ({
-        id: r.id,
-        date: r.date,
-        amount: parseFloat(r.amount),
-        project: projectMap[r.project_id]?.name || '?',
-      }))
-
-      // 默认选中第一个项目用于历史趋势图
-      if (projects.value.length > 0 && !selectedProjectHistory.value) {
-        selectedProjectHistory.value = projects.value[0].name
-      }
+      await fetchAllData()
     } catch (err) {
       loadError.value = err.message || '数据加载失败'
       message.error('数据加载失败: ' + loadError.value)
     } finally {
       loading.value = false
+    }
+  }
+
+  /** 刷新数据（操作后调用，不显示 loading，不触发页面重载感） */
+  async function refreshData() {
+    try {
+      await fetchAllData()
+    } catch (err) {
+      message.error('数据刷新失败: ' + err.message)
     }
   }
 
@@ -320,7 +334,7 @@ export const useFinanceStore = defineStore('finance', () => {
         sort_order: maxOrder + 1,
       })
       if (error) throw error
-      await loadData()
+      await refreshData()
       message.success('项目 "' + name.trim() + '" 已添加')
       return true
     } catch (err) {
@@ -337,7 +351,7 @@ export const useFinanceStore = defineStore('finance', () => {
     try {
       const { error } = await supabase.from('projects').update({ currency: newCurr }).eq('id', p.id)
       if (error) throw error
-      await loadData()
+      await refreshData()
       message.success('"' + name + '" 币种已切换为 ' + newCurr)
       return true
     } catch (err) {
@@ -354,7 +368,7 @@ export const useFinanceStore = defineStore('finance', () => {
       const { error } = await supabase.from('projects').delete().eq('id', p.id)
       if (error) throw error
       if (selectedProjectHistory.value === name) selectedProjectHistory.value = null
-      await loadData()
+      await refreshData()
       message.success('项目 "' + name + '" 已删除')
       return true
     } catch (err) {
@@ -377,7 +391,7 @@ export const useFinanceStore = defineStore('finance', () => {
         amount: Math.round(amount * 100) / 100,
       })
       if (error) throw error
-      await loadData()
+      await refreshData()
       const type = amount >= 0 ? '投入本金' : '减少本金'
       message.success(type + ' -> ' + project)
       return true
@@ -392,7 +406,7 @@ export const useFinanceStore = defineStore('finance', () => {
     try {
       const { error } = await supabase.from('investments').delete().eq('id', id)
       if (error) throw error
-      await loadData()
+      await refreshData()
       message.success('投入记录已删除')
       return true
     } catch (err) {
@@ -414,7 +428,7 @@ export const useFinanceStore = defineStore('finance', () => {
         { onConflict: 'project_id,date' }
       )
       if (error) throw error
-      await loadData()
+      await refreshData()
       message.success('已更新 ' + project + ' 金额')
       return true
     } catch (err) {
@@ -428,7 +442,7 @@ export const useFinanceStore = defineStore('finance', () => {
     try {
       const { error } = await supabase.from('assets').delete().eq('id', id)
       if (error) throw error
-      await loadData()
+      await refreshData()
       message.success('资产记录已删除')
       return true
     } catch (err) {
@@ -440,39 +454,51 @@ export const useFinanceStore = defineStore('finance', () => {
   // ========== 表格列定义 ==========
 
   /** 投入记录表列定义 */
-  const investColumns = computed(() => [
-    { title: '日期', key: 'date', width: 110 },
-    { title: '项目', key: 'project', width: 100 },
-    {
-      title: '金额', key: 'amount',
-      render: row => h(NText, { type: pnlType(row.amountRaw) }, { default: () => row.amount })
-    },
-    {
-      title: '类型', key: 'type', width: 70,
-      render: row => h(NTag, { type: row.typeType, size: 'small', bordered: false }, { default: () => row.type })
-    },
-    {
-      title: '', key: 'actions', width: 50,
-      render: row => h(NPopconfirm, { onPositiveClick: () => deleteInvest(row.id) }, {
-        trigger: () => h(NButton, { size: 'tiny', secondary: true, type: 'error', circle: true }, { default: () => '×' }),
-        default: () => '删除这条记录？'
+  const investColumns = computed(() => {
+    const cols = [
+      { title: '日期', key: 'date', width: 110 },
+      { title: '项目', key: 'project', width: 100 },
+      {
+        title: '金额', key: 'amount',
+        render: row => h(NText, { type: pnlType(row.amountRaw) }, { default: () => row.amount })
+      },
+      {
+        title: '类型', key: 'type', width: 70,
+        render: row => h(NTag, { type: row.typeType, size: 'small', bordered: false }, { default: () => row.type })
+      },
+    ]
+    // 编辑模式下才显示删除按钮
+    if (settings.isEditing) {
+      cols.push({
+        title: '', key: 'actions', width: 50,
+        render: row => h(NPopconfirm, { onPositiveClick: () => deleteInvest(row.id) }, {
+          trigger: () => h(NButton, { size: 'tiny', secondary: true, type: 'error', circle: true }, { default: () => '×' }),
+          default: () => '删除这条记录？'
+        })
       })
-    },
-  ])
+    }
+    return cols
+  })
 
   /** 资产记录表列定义 */
-  const assetColumns = computed(() => [
-    { title: '日期', key: 'date', width: 110 },
-    { title: '项目', key: 'project', width: 100 },
-    { title: '金额', key: 'amount' },
-    {
-      title: '', key: 'actions', width: 50,
-      render: row => h(NPopconfirm, { onPositiveClick: () => deleteAsset(row.id) }, {
-        trigger: () => h(NButton, { size: 'tiny', secondary: true, type: 'error', circle: true }, { default: () => '×' }),
-        default: () => '删除这条记录？'
+  const assetColumns = computed(() => {
+    const cols = [
+      { title: '日期', key: 'date', width: 110 },
+      { title: '项目', key: 'project', width: 100 },
+      { title: '金额', key: 'amount' },
+    ]
+    // 编辑模式下才显示删除按钮
+    if (settings.isEditing) {
+      cols.push({
+        title: '', key: 'actions', width: 50,
+        render: row => h(NPopconfirm, { onPositiveClick: () => deleteAsset(row.id) }, {
+          trigger: () => h(NButton, { size: 'tiny', secondary: true, type: 'error', circle: true }, { default: () => '×' }),
+          default: () => '删除这条记录？'
+        })
       })
-    },
-  ])
+    }
+    return cols
+  })
 
   return {
     // 状态
@@ -480,7 +506,7 @@ export const useFinanceStore = defineStore('finance', () => {
     loading, loadError,
     selectedProjectHistory, investFilterProject, assetFilterProject,
     // 方法
-    loadData,
+    loadData, refreshData,
     getProjectCurrency, getPrincipal, getLatestAsset,
     addProject, editProjectCurrency, deleteProject,
     addInvest, deleteInvest, updateAsset, deleteAsset,
