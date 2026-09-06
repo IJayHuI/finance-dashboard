@@ -29,7 +29,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { useMessage } from 'naive-ui'
+import { createDiscreteApi } from 'naive-ui'
 import { useSettingsStore } from '../../stores/settings'
 
 const props = defineProps({
@@ -41,7 +41,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:show', 'success'])
 
-const message = useMessage()
+// 使用 createDiscreteApi 创建消息实例（不需要 message-provider）
+const { message } = createDiscreteApi(['message'])
 const settingsStore = useSettingsStore()
 
 // 双向绑定 show
