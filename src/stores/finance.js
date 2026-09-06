@@ -5,7 +5,8 @@
  */
 import { defineStore } from 'pinia'
 import { ref, reactive, computed, h } from 'vue'
-import { createDiscreteApi, NTag, NText, NPopconfirm, NButton } from 'naive-ui'
+import { createDiscreteApi, NTag, NText, NPopconfirm, NButton, NIcon } from 'naive-ui'
+import { ClearRound } from '@vicons/material'
 import { supabase } from '../utils/supabase'
 import { toDisplay, pnlType } from '../utils/helpers'
 import { useSettingsStore } from './settings'
@@ -472,7 +473,7 @@ export const useFinanceStore = defineStore('finance', () => {
       cols.push({
         title: '', key: 'actions', width: 50,
         render: row => h(NPopconfirm, { onPositiveClick: () => deleteInvest(row.id) }, {
-          trigger: () => h(NButton, { size: 'tiny', secondary: true, type: 'error', circle: true }, { default: () => '×' }),
+          trigger: () => h(NButton, { size: 'tiny', secondary: true, type: 'error', circle: true, renderIcon: () => h(NIcon, { size: 14 }, { default: () => h(ClearRound) }) }, {}),
           default: () => '删除这条记录？'
         })
       })
@@ -492,7 +493,7 @@ export const useFinanceStore = defineStore('finance', () => {
       cols.push({
         title: '', key: 'actions', width: 50,
         render: row => h(NPopconfirm, { onPositiveClick: () => deleteAsset(row.id) }, {
-          trigger: () => h(NButton, { size: 'tiny', secondary: true, type: 'error', circle: true }, { default: () => '×' }),
+          trigger: () => h(NButton, { size: 'tiny', secondary: true, type: 'error', circle: true, renderIcon: () => h(NIcon, { size: 14 }, { default: () => h(ClearRound) }) }, {}),
           default: () => '删除这条记录？'
         })
       })
