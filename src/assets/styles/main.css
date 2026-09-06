@@ -1,0 +1,33 @@
+/* TailwindCSS 基础指令 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 全局基础样式 */
+body {
+  font-family: theme('fontFamily.sans');
+  min-height: 100vh;
+}
+
+/* 图表容器基础样式 */
+.chart-container {
+  position: relative;
+  height: 300px;
+  min-width: 0;
+}
+
+/* 淡入动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
