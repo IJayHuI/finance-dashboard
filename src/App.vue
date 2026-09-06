@@ -5,6 +5,7 @@
  */
 <script setup>
 import { computed, onMounted } from 'vue'
+import { zhCN, dateZhCN } from 'naive-ui'
 import { useSettingsStore } from './stores/settings'
 import { useFinanceStore } from './stores/finance'
 import { useExchangeRate } from './composables/useExchangeRate'
@@ -42,8 +43,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <!-- Naive UI 全局配置 -->
-  <n-config-provider :theme="naiveTheme" :theme-overrides="themeOverrides">
+  <!-- Naive UI 全局配置 + 中文语言包 -->
+  <n-config-provider :locale="zhCN" :date-locale="dateZhCN" :theme="naiveTheme" :theme-overrides="themeOverrides">
     <n-layout position="absolute" style="min-height: 100vh">
       <n-layout-content style="padding: 0">
         <!-- 加载中 -->

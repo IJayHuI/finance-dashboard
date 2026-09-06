@@ -472,7 +472,7 @@ export const useFinanceStore = defineStore('finance', () => {
     if (settings.isEditing) {
       cols.push({
         title: '', key: 'actions', width: 50,
-        render: row => h(NPopconfirm, { onPositiveClick: () => deleteInvest(row.id) }, {
+        render: row => h(NPopconfirm, { onPositiveClick: () => deleteInvest(row.id), positiveButtonProps: { secondary: true }, negativeButtonProps: { secondary: true } }, {
           trigger: () => h(NButton, { size: 'tiny', secondary: true, type: 'error', circle: true, renderIcon: () => h(NIcon, { size: 14 }, { default: () => h(ClearRound) }) }, {}),
           default: () => '删除这条记录？'
         })
@@ -492,7 +492,7 @@ export const useFinanceStore = defineStore('finance', () => {
     if (settings.isEditing) {
       cols.push({
         title: '', key: 'actions', width: 50,
-        render: row => h(NPopconfirm, { onPositiveClick: () => deleteAsset(row.id) }, {
+        render: row => h(NPopconfirm, { onPositiveClick: () => deleteAsset(row.id), positiveButtonProps: { secondary: true }, negativeButtonProps: { secondary: true } }, {
           trigger: () => h(NButton, { size: 'tiny', secondary: true, type: 'error', circle: true, renderIcon: () => h(NIcon, { size: 14 }, { default: () => h(ClearRound) }) }, {}),
           default: () => '删除这条记录？'
         })

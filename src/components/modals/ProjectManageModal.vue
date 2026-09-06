@@ -36,7 +36,11 @@
               </template>
               切换币种
             </n-button>
-            <n-popconfirm @positive-click="handleDelete(p.name)">
+            <n-popconfirm
+              @positive-click="handleDelete(p.name)"
+              :positive-button-props="{ secondary: true }"
+              :negative-button-props="{ secondary: true }"
+            >
               <template #trigger>
                 <n-button size="small" secondary type="error">
                   <template #icon>

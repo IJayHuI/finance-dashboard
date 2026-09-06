@@ -123,7 +123,7 @@ const investColumns = computed(() => {
       title: '操作', key: 'action', width: 80,
       render: row => h(
         NPopconfirm,
-        { onPositiveClick: () => handleDelete(row) },
+        { onPositiveClick: () => handleDelete(row), positiveButtonProps: { secondary: true }, negativeButtonProps: { secondary: true } },
         {
           trigger: () => h(
             NButton,
@@ -153,7 +153,7 @@ const assetColumns = computed(() => {
       title: '操作', key: 'action', width: 80,
       render: row => h(
         NPopconfirm,
-        { onPositiveClick: () => handleDelete(row) },
+        { onPositiveClick: () => handleDelete(row), positiveButtonProps: { secondary: true }, negativeButtonProps: { secondary: true } },
         {
           trigger: () => h(
             NButton,
