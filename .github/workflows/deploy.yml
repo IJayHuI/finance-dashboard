@@ -49,6 +49,7 @@ jobs:
           # 从 GitHub Secrets 读取环境变量
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_EDIT_PASSWORD: ${{ secrets.VITE_EDIT_PASSWORD }}
         run: pnpm build
 
       - name: Setup Pages

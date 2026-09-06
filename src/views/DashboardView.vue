@@ -3,9 +3,10 @@
  * 整合所有组件，构成完整的大屏页面
  */
 <script setup>
-import { ref, h } from 'vue'
+import { ref, h, computed } from 'vue'
 import { NIcon } from 'naive-ui'
 import { useFinanceStore } from '../stores/finance'
+import { useSettingsStore } from '../stores/settings'
 
 // 组件导入
 import HeaderBar from '../components/common/HeaderBar.vue'
@@ -30,6 +31,8 @@ import {
 
 // store
 const finance = useFinanceStore()
+const settingsStore = useSettingsStore()
+const isEditing = computed(() => settingsStore.isEditing)
 
 // 弹窗状态
 const showProjectManage = ref(false)
@@ -48,8 +51,8 @@ const showAllAsset = ref(false)
     <!-- KPI 卡片 -->
     <KpiCards />
 
-    <!-- 操作按钮区 -->
-    <div class="mb-6 flex flex-wrap gap-3">
+    <!-- 操作按钮区（仅编辑模式可见） -->
+    <div v-if="isEditing" class="mb-6 flex flex-wrap gap-3">
       <n-button secondary :render-icon="() => h(NIcon, null, { default: () => h(FolderRound) })" @click="showProjectManage = true">
         项目管理
       </n-button>
@@ -130,10 +133,12 @@ const showAllAsset = ref(false)
       </n-card>
     </div>
 
-    <!-- 弹窗 -->
-    <ProjectManageModal v-model:show="showProjectManage" />
-    <AddInvestModal v-model:show="showAddInvest" />
-    <UpdateAssetModal v-model:show="showUpdateAsset" />
+    <!-- 弹窗（仅编辑模式加载） -->
+    <template v-if="isEditing">
+      <ProjectManageModal v-model:show="showProjectManage" />
+      <AddInvestModal v-model:show="showAddInvest" />
+      <UpdateAssetModal v-model:show="showUpdateAsset" />
+    </template>
     <RecordDrawer v-model:show="showAllInvest" title="投入记录" type="invest" />
     <RecordDrawer v-model:show="showAllAsset" title="资产记录" type="asset" />
   </div>

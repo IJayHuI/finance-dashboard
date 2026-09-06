@@ -81,11 +81,41 @@
           USD
         </n-button>
       </n-button-group>
+
+      <!-- 编辑模式按钮 -->
+      <n-button
+        v-if="!isEditing"
+        size="small"
+        secondary
+        type="success"
+        @click="handleEnterEdit"
+      >
+        <template #icon>
+          <n-icon :component="EditNoteRound" />
+        </template>
+        开启编辑
+      </n-button>
+      <n-button
+        v-else
+        size="small"
+        secondary
+        type="warning"
+        @click="handleExitEdit"
+      >
+        <template #icon>
+          <n-icon :component="LogoutRound" />
+        </template>
+        退出编辑
+      </n-button>
     </div>
   </div>
+
+  <!-- 密码验证弹窗 -->
+  <EditPasswordModal v-model:show="showPasswordModal" />
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { NIcon } from 'naive-ui'
 import {
@@ -95,16 +125,36 @@ import {
   SettingsSystemDaydreamRound,
   CurrencyYuanRound,
   AttachMoneyRound,
+  EditNoteRound,
+  LogoutRound,
 } from '@vicons/material'
 import { useSettingsStore } from '../../stores/settings'
 import { useExchangeRate } from '../../composables/useExchangeRate'
+import EditPasswordModal from '../modals/EditPasswordModal.vue'
 
 // 使用设置 store
 const settingsStore = useSettingsStore()
-const { themeMode, displayCurrency, exchangeRate, rateLoading } = storeToRefs(settingsStore)
+const { themeMode, displayCurrency, exchangeRate, rateLoading, isEditing } = storeToRefs(settingsStore)
 
 // 汇率获取方法
 const { fetchExchangeRate } = useExchangeRate()
+
+// 密码弹窗
+const showPasswordModal = ref(false)
+
+/**
+ * 开启编辑模式（弹出密码框）
+ */
+function handleEnterEdit() {
+  showPasswordModal.value = true
+}
+
+/**
+ * 退出编辑模式
+ */
+function handleExitEdit() {
+  settingsStore.exitEditMode()
+}
 
 /**
  * 刷新汇率

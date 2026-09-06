@@ -18,6 +18,27 @@ export const useSettingsStore = defineStore('settings', () => {
   const rateSource = ref('')
   // 汇率加载状态
   const rateLoading = ref(false)
+  // 编辑模式（密码验证后才能修改数据）
+  const isEditing = ref(false)
+
+  /**
+   * 验证编辑密码
+   * @param {string} password - 用户输入的密码
+   * @returns {boolean} 是否验证通过
+   */
+  function verifyEditPassword(password) {
+    const correctPassword = import.meta.env.VITE_EDIT_PASSWORD || 'admin123'
+    if (password === correctPassword) {
+      isEditing.value = true
+      return true
+    }
+    return false
+  }
+
+  /** 退出编辑模式 */
+  function exitEditMode() {
+    isEditing.value = false
+  }
 
   /**
    * 根据主题模式计算 Naive UI 主题对象
@@ -55,16 +76,19 @@ export const useSettingsStore = defineStore('settings', () => {
     exchangeRate,
     rateSource,
     rateLoading,
+    isEditing,
     naiveTheme,
     isDark,
     setTheme,
     setCurrency,
     setExchangeRate,
+    verifyEditPassword,
+    exitEditMode,
   }
 }, {
   // 持久化配置：只持久化主题和货币设置，汇率不持久化（每次重新获取）
   persist: {
     key: 'finance-settings',
-    pick: ['themeMode', 'displayCurrency'],
+    pick: ['themeMode', 'displayCurrency', 'isEditing'],
   }
 })

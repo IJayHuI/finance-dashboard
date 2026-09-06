@@ -38,6 +38,7 @@ import { storeToRefs } from 'pinia'
 import { NTag, NText, NButton, NIcon, NPopconfirm } from 'naive-ui'
 import { DeleteRound } from '@vicons/material'
 import { useFinanceStore } from '../../stores/finance'
+import { useSettingsStore } from '../../stores/settings'
 
 // 定义 props
 const props = defineProps({
@@ -54,6 +55,10 @@ const emit = defineEmits(['update:show'])
 // 使用财务 store
 const financeStore = useFinanceStore()
 const { filterOptions } = storeToRefs(financeStore)
+
+// 使用设置 store（判断编辑模式）
+const settingsStore = useSettingsStore()
+const isEditing = computed(() => settingsStore.isEditing)
 
 // 计算属性：根据类型获取对应的数据和筛选状态
 const isInvest = computed(() => props.type === 'invest')
@@ -99,63 +104,73 @@ function handleDelete(row) {
   }
 }
 
-// 投入记录表列配置
-const investColumns = [
-  { title: '日期', key: 'date', width: 120 },
-  { title: '项目', key: 'project' },
-  {
-    title: '类型', key: 'type', width: 80,
-    render: row => h(NTag, { size: 'small', type: row.typeType, bordered: false }, { default: () => row.type })
-  },
-  {
-    title: '金额', key: 'amount',
-    render: row => h(NText, { type: row.typeType }, { default: () => row.amount })
-  },
-  {
-    title: '操作', key: 'action', width: 80,
-    render: row => h(
-      NPopconfirm,
-      { onPositiveClick: () => handleDelete(row) },
-      {
-        trigger: () => h(
-          NButton,
-          { size: 'tiny', secondary: true, type: 'error' },
-          {
-            icon: () => h(NIcon, null, { default: () => h(DeleteRound) }),
-            default: () => '删除'
-          }
-        ),
-        default: () => '确定删除这条记录？'
-      }
-    )
-  },
-]
+// 投入记录表列配置（编辑模式下显示删除操作列）
+const investColumns = computed(() => {
+  const cols = [
+    { title: '日期', key: 'date', width: 120 },
+    { title: '项目', key: 'project' },
+    {
+      title: '类型', key: 'type', width: 80,
+      render: row => h(NTag, { size: 'small', type: row.typeType, bordered: false }, { default: () => row.type })
+    },
+    {
+      title: '金额', key: 'amount',
+      render: row => h(NText, { type: row.typeType }, { default: () => row.amount })
+    },
+  ]
+  if (isEditing.value) {
+    cols.push({
+      title: '操作', key: 'action', width: 80,
+      render: row => h(
+        NPopconfirm,
+        { onPositiveClick: () => handleDelete(row) },
+        {
+          trigger: () => h(
+            NButton,
+            { size: 'tiny', secondary: true, type: 'error' },
+            {
+              icon: () => h(NIcon, null, { default: () => h(DeleteRound) }),
+              default: () => '删除'
+            }
+          ),
+          default: () => '确定删除这条记录？'
+        }
+      )
+    })
+  }
+  return cols
+})
 
-// 资产记录表列配置
-const assetColumns = [
-  { title: '日期', key: 'date', width: 120 },
-  { title: '项目', key: 'project' },
-  { title: '金额', key: 'amount' },
-  {
-    title: '操作', key: 'action', width: 80,
-    render: row => h(
-      NPopconfirm,
-      { onPositiveClick: () => handleDelete(row) },
-      {
-        trigger: () => h(
-          NButton,
-          { size: 'tiny', secondary: true, type: 'error' },
-          {
-            icon: () => h(NIcon, null, { default: () => h(DeleteRound) }),
-            default: () => '删除'
-          }
-        ),
-        default: () => '确定删除这条记录？'
-      }
-    )
-  },
-]
+// 资产记录表列配置（编辑模式下显示删除操作列）
+const assetColumns = computed(() => {
+  const cols = [
+    { title: '日期', key: 'date', width: 120 },
+    { title: '项目', key: 'project' },
+    { title: '金额', key: 'amount' },
+  ]
+  if (isEditing.value) {
+    cols.push({
+      title: '操作', key: 'action', width: 80,
+      render: row => h(
+        NPopconfirm,
+        { onPositiveClick: () => handleDelete(row) },
+        {
+          trigger: () => h(
+            NButton,
+            { size: 'tiny', secondary: true, type: 'error' },
+            {
+              icon: () => h(NIcon, null, { default: () => h(DeleteRound) }),
+              default: () => '删除'
+            }
+          ),
+          default: () => '确定删除这条记录？'
+        }
+      )
+    })
+  }
+  return cols
+})
 
 // 根据类型选择列配置
-const columns = computed(() => isInvest.value ? investColumns : assetColumns)
+const columns = computed(() => isInvest.value ? investColumns.value : assetColumns.value)
 </script>
