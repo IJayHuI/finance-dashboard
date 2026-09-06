@@ -38,7 +38,7 @@ const columns = [
     width: 100,
     render: row => h(
       NTag,
-      { size: 'small', type: row.currency === 'USD' ? 'info' : 'warning', bordered: false },
+      { size: 'small', type: row.currency === 'USD' ? 'info' : 'warning', round: true, bordered: false },
       { default: () => row.currency }
     ),
   },
@@ -71,7 +71,7 @@ const columns = [
     width: 100,
     render: row => h(
       NTag,
-      { type: row.statusType, size: 'small', round: true },
+      { type: row.statusType, size: 'small', round: true, bordered: false },
       { default: () => row.status }
     ),
   },

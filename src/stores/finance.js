@@ -465,7 +465,7 @@ export const useFinanceStore = defineStore('finance', () => {
       },
       {
         title: '类型', key: 'type', width: 70,
-        render: row => h(NTag, { type: row.typeType, size: 'small', bordered: false }, { default: () => row.type })
+        render: row => h(NTag, { type: row.typeType, size: 'small', round: true, bordered: false }, { default: () => row.type })
       },
     ]
     // 编辑模式下才显示删除按钮

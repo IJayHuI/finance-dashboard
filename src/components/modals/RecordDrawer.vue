@@ -111,7 +111,7 @@ const investColumns = computed(() => {
     { title: '项目', key: 'project' },
     {
       title: '类型', key: 'type', width: 80,
-      render: row => h(NTag, { size: 'small', type: row.typeType, bordered: false }, { default: () => row.type })
+      render: row => h(NTag, { size: 'small', type: row.typeType, round: true, bordered: false }, { default: () => row.type })
     },
     {
       title: '金额', key: 'amount',

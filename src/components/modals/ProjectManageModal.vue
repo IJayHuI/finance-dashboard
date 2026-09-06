@@ -21,7 +21,7 @@
           <!-- 项目信息 -->
           <div class="project-mgr-info flex items-center gap-3 flex-wrap">
             <span class="project-mgr-name font-semibold">{{ p.name }}</span>
-            <n-tag :type="p.currency === 'USD' ? 'info' : 'warning'" size="small" :bordered="false">
+            <n-tag :type="p.currency === 'USD' ? 'info' : 'warning'" size="small" round :bordered="false">
               {{ p.currency }}
             </n-tag>
             <span class="project-mgr-meta text-xs opacity-70">
