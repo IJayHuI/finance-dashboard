@@ -103,7 +103,7 @@
         @click="handleExitEdit"
       >
         <template #icon>
-          <n-icon :component="LogoutRound" />
+          <n-icon :component="ArrowBackRound" />
         </template>
         退出编辑
       </n-button>
@@ -126,7 +126,7 @@ import {
   CurrencyYuanRound,
   AttachMoneyRound,
   EditNoteRound,
-  LogoutRound,
+  ArrowBackRound,
 } from '@vicons/material'
 import { useSettingsStore } from '../../stores/settings'
 import { useExchangeRate } from '../../composables/useExchangeRate'
